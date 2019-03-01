@@ -1,0 +1,2 @@
+jsonpath2==0.1.0
+jsonpointer==2.0

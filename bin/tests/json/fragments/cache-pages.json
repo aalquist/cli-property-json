@@ -1,0 +1,52 @@
+{
+    "name": "Cache Pages",
+    "children": [
+        {
+            "name": "Bypass Cache",
+            "children": [],
+            "behaviors": [
+                {
+                    "name": "caching",
+                    "options": {
+                        "behavior": "BYPASS_CACHE"
+                    }
+                }
+            ],
+            "criteria": [
+                {
+                    "name": "requestCookie",
+                    "options": {
+                        "cookieName": "login",
+                        "matchOperator": "EXISTS",
+                        "matchWildcardName": false,
+                        "matchCaseSensitiveName": true
+                    }
+                }
+            ],
+            "criteriaMustSatisfy": "all"
+        }
+    ],
+    "behaviors": [
+        {
+            "name": "caching",
+            "options": {
+                "behavior": "MAX_AGE",
+                "mustRevalidate": false,
+                "ttl": "7d"
+            }
+        }
+    ],
+    "criteria": [
+        {
+            "name": "fileExtension",
+            "options": {
+                "matchOperator": "IS_ONE_OF",
+                "values": [
+                    "html"
+                ],
+                "matchCaseSensitive": false
+            }
+        }
+    ],
+    "criteriaMustSatisfy": "all"
+}
