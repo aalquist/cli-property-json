@@ -16,6 +16,7 @@ import unittest
 import os
 import json
 import jsonpointer
+import sys
 
 from jsonpath_ng import jsonpath, parse
 
@@ -125,28 +126,63 @@ class Property_JSON_Tests(unittest.TestCase):
         self.assertEqual("latest", resultArray[0]["_value"])
 
 
+
+    def testJSONPathtoJSONPointer(self):
+
+        formatter = JSONTreeFormatter()
+        
+        result = formatter.jsonPathtoJsonPointer("$.rules.children.[0].children.[0]")
+        self.assertEqual("/rules/children/0/children/0", result )
+
+        result = formatter.jsonPathtoJsonPointer("$.rules.children.[0].children")
+        self.assertEqual("/rules/children/0/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[0].children")
+        self.assertEqual("/rules/children/0/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children")
+        self.assertEqual("/rules/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[0].children")
+        self.assertEqual("/rules/children/0/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[0].children.[0].children")
+        self.assertEqual("/rules/children/0/children/0/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[1].children")
+        self.assertEqual("/rules/children/1/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[1].children.[01].children")
+        self.assertEqual("/rules/children/1/children/01/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[1].children.[10].children")
+        self.assertEqual("/rules/children/1/children/10/children", result )
+
+        result = formatter.jsonPathtoJsonPointer(".rules.children.[1].children.[200].children")        
+        self.assertEqual("/rules/children/1/children/200/children", result )
+
+
     def testJSON_Taversals(self):
 
         basedir = os.path.abspath(os.path.dirname(__file__))
         originalJsonRuleTree = self.getJSONFromFile( "{}/json/ruletrees/new-ion-standard.rule-tree.json".format( basedir ) )
         
-        print(os.linesep)
-        for match in parse("$..children").find(originalJsonRuleTree):
-            m = str(match.full_path)
-            print(m)
-
+        tools = JSONTraversalTools()
         formatter = JSONTreeFormatter()
 
-        jsonPath = "$.rules.children.[0].children"
-        for match in parse(jsonPath).find(originalJsonRuleTree):
-            topSectionRules = match.value
-            formatter.printJsonPointer(topSectionRules,jsonPath)
-        
-        path = '/rules/children/0/children'
-        topSectionRules = jsonpointer.resolve_pointer(originalJsonRuleTree, path)
-        
-        formatter.printJsonPointer(topSectionRules,path)
+        someArray = tools.resolveJsonPathstoPointers(originalJsonRuleTree, "$..children")
+        self.assertEqual(10,len(someArray ))
 
+        for pathPair in someArray:
+            jsonPathPair = pathPair[0]
+            jsonPointerPair = pathPair[1]
+
+            resolvedJsonPointer = tools.resolveJsonPointer(originalJsonRuleTree,jsonPointerPair)
+            resolvedJsonPath = tools.resolveJsonPaths(originalJsonRuleTree,jsonPathPair)
+            self.assertEqual(resolvedJsonPointer,resolvedJsonPath[1])
+            
+
+        
         
     def getJSONFromFile(self, jsonPath):
         

@@ -1,6 +1,8 @@
 import jsonpointer
+from jsonpath_ng import jsonpath, parse
 import os
 import copy
+from bin.JSONTreeFormatter import JSONTreeFormatter
 
 class JSONTraversalTools():
 
@@ -16,7 +18,48 @@ class JSONTraversalTools():
         siblingJson.insert(0,fragment)
         return jsonpointer.set_pointer(doc, path,siblingJson, inplace=False)
         
+    def getJsonPaths(self, doc, jsonPath):
+        returnArray = []
+        for match in parse(jsonPath).find(doc):
+            m = str(match.full_path)
+            returnArray.append(m)    
+        return returnArray
 
+    def resolveJsonPaths(self, doc, jsonPath):
+        returnArray = []
+        for match in parse(jsonPath).find(doc):
+            returnArray.extend((str(match.full_path), match.value) )
+        return returnArray
+
+    def resolveJsonPathstoPointers(self, doc, jsonPath):
+        formatter = JSONTreeFormatter()
+        returnArray = []
+
+        pathArray = self.getJsonPaths(doc, jsonPath)
+
+        for jsonPath in pathArray:
+            
+            pathValues = self.resolveJsonPaths(doc, jsonPath)
+            subpath = pathValues[0]
+            subjson = pathValues[1]
+            if len(subjson) > 0: #skip jsonPaths that won't resolve to a single object
+
+                #testing jsonPoninter and jsonPaths are returning equal values
+                for i in range(0,len(subjson)): 
+                    updatedPath = "{}.[{}]".format(subpath,i)
+                    pointer = "/{}".format(formatter.jsonPathtoJsonPointer(updatedPath))
+                    returnArray.append( (updatedPath, pointer) ) 
+            else:
+                pointer = "/{}".format(formatter.jsonPathtoJsonPointer(subpath))
+                returnArray.append( (subpath, pointer) ) 
+
+
+
+        return returnArray
+
+    def resolveJsonPointer(self, doc, jsonPointer):
+        returnJson = jsonpointer.resolve_pointer(doc, jsonPointer)
+        return returnJson
 
     def fetchPointer(self, doc, path):
 
