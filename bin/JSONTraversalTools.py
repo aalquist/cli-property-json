@@ -2,7 +2,7 @@ import jsonpointer
 from jsonpath_ng import jsonpath, parse
 import os
 import copy
-from bin.JSONTreeFormatter import JSONTreeFormatter
+from .JSONTreeFormatter import JSONTreeFormatter
 
 class JSONTraversalTools():
 
@@ -42,7 +42,10 @@ class JSONTraversalTools():
             pathValues = self.resolveJsonPaths(doc, jsonPath)
             subpath = pathValues[0]
             subjson = pathValues[1]
-            if len(subjson) > 0: #skip jsonPaths that won't resolve to a single object
+            isList = isinstance(subjson, list)
+            isElement = all( not isinstance(elem, list) and not isinstance(elem, dict) for elem in subjson)  
+
+            if not isElement and isList and len(subjson) > 0: #skip jsonPaths that won't resolve to a single object
 
                 #testing jsonPoninter and jsonPaths are returning equal values
                 for i in range(0,len(subjson)): 
@@ -53,7 +56,7 @@ class JSONTraversalTools():
                 pointer = "/{}".format(formatter.jsonPathtoJsonPointer(subpath))
                 returnArray.append( (subpath, pointer) ) 
 
-
+        returnArray.sort()
 
         return returnArray
 

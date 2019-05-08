@@ -1,6 +1,9 @@
 import os
 import re
 
+from . import JSONTraversalTools
+
+
 class JSONTreeFormatter():
 
     def jsonPathtoJsonPointer(self, jsonPath):
@@ -26,30 +29,74 @@ class JSONTreeFormatter():
 
         return result
 
-    #def escapeSpecialCharacters (self, text, characters ):
-    #    for character in characters:
-    #        text = text.replace( character, '\\' + character )
-    #    return text
+    def getTreeSummary(self, originalJsonPath, originalJsonRuleTree, returnEmpty = True, printPointers = True):
 
-    def printJsonPointer(self,json, path):
+        tools = JSONTraversalTools.JSONTraversalTools()
 
+        pathResultArray = tools.resolveJsonPathstoPointers(originalJsonRuleTree, originalJsonPath)    
+    
+        if originalJsonPath :
+            print(originalJsonPath) 
+
+        output = []
+        for pathPair in pathResultArray:
+            
+            jsonPathPair = pathPair[0]
+            jsonPointerPair = pathPair[1]
+            
+
+            if printPointers:
+                resolved = tools.resolveJsonPointer(originalJsonRuleTree,jsonPointerPair)
+                path = jsonPointerPair
+            else:
+                resolved = tools.resolveJsonPaths(originalJsonRuleTree,jsonPathPair)[1]
+                path = jsonPathPair
+
+            
+            result = self.printJsonPointer(resolved, path, "", returnEmpty)
+            
+            if result is not None:
+                output.append( result )
+
+        
+
+        maxpathchars = 0
+        for o in output: 
+            left = o.split("\t")
+            size = len(left[0]) + 1
+            if maxpathchars < size:
+                maxpathchars = size
+
+            
+
+        for o in output:    
+            print(o.expandtabs(maxpathchars))
+
+    def printJsonPointer(self,json, path, indent = "", returnEmpty = False):
+
+            
             if( isinstance(json, list)):
 
-                print(os.linesep)
-                for i in range(0,len(json)):
+                if len(json) > 0:
+                    for i in range(0,len(json)):
 
-                    subjson = json[i]
-                    if isinstance(json[i], dict) and "name" in subjson:
-                        print("{}/{} > name={}".format(path,i, subjson["name"]) )
+                        subjson = json[i]
+                        if isinstance(json[i], dict) and "name" in subjson:
+                            return ("{}{}/{} \t name={}".format(indent,path,i, subjson["name"]) )
 
-                    else:
-                        print("{}/{}".format(path,i) )
+                        else:
+                            return ("{}{}/{}".format(indent,path,i) )
+                elif returnEmpty == False:
+                    return ("{}{}\t[]".format(indent,path) )
+                else: 
+                    return None
             else: 
                 
                 if isinstance(json, dict) and "name" in json:
-                        print("{} > name={}".format(path, json["name"] ) )
+                        return ("{}{} \t name={}".format(indent,path, json["name"] ) )
 
 
                 else:
-                    print("{}".format(path) )
+                    return ("{}{}".format(indent,path) )
 
+           

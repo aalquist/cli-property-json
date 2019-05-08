@@ -17,6 +17,7 @@ import os
 import json
 import jsonpointer
 import sys
+from io import StringIO
 
 from jsonpath_ng import jsonpath, parse
 
@@ -161,6 +162,118 @@ class Property_JSON_Tests(unittest.TestCase):
         result = formatter.jsonPathtoJsonPointer(".rules.children.[1].children.[200].children")        
         self.assertEqual("/rules/children/1/children/200/children", result )
 
+    def testAll(self):
+
+        listOfStrings = [ "abc", "123", "xyz"]
+
+        result = all( not isinstance(elem, list) and not isinstance(elem, dict) for elem in listOfStrings)    
+
+        self.assertTrue(result)
+
+    def testJSON_Summary(self):
+
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        originalJsonRuleTree = self.getJSONFromFile( "{}/json/ruletrees/new-ion-standard.rule-tree.json".format( basedir ) )
+        
+        originalJsonPath = "$..children"
+
+        formatter = JSONTreeFormatter()
+        
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree) , originalJsonPath, True)
+        self.assertEqual(7, len(result) )
+        
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("/rules/children/0              name=Performance", result[1])
+        self.assertEqual("/rules/children/0/children/0   name=Compressible Objects", result[2])
+        self.assertEqual("/rules/children/1              name=Offload", result[3])
+        self.assertEqual("/rules/children/1/children/0   name=CSS and JavaScript", result[4])
+        self.assertEqual("/rules/children/1/children/1   name=Static Objects", result[5])
+        self.assertEqual("/rules/children/1/children/2   name=Uncacheable Responses", result[6])
+        
+
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True, False) , originalJsonPath, True)
+        self.assertEqual(7, len(result) )
+
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("rules.children.[0]                name=Performance", result[1])
+        self.assertEqual("rules.children.[0].children.[0]   name=Compressible Objects", result[2])
+        self.assertEqual("rules.children.[1]                name=Offload", result[3])
+        self.assertEqual("rules.children.[1].children.[0]   name=CSS and JavaScript", result[4])
+        self.assertEqual("rules.children.[1].children.[1]   name=Static Objects", result[5])
+        self.assertEqual("rules.children.[1].children.[2]   name=Uncacheable Responses", result[6])
+        
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, False) , originalJsonPath, True)
+        self.assertEqual(11, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("/rules/children/0                      name=Performance", result[1])
+        self.assertEqual("/rules/children/0/children/0           name=Compressible Objects", result[2])
+        self.assertEqual("/rules/children/0/children/0/children []", result[3])
+        self.assertEqual("/rules/children/1                      name=Offload", result[4])
+        self.assertEqual("/rules/children/1/children/0           name=CSS and JavaScript", result[5])
+        self.assertEqual("/rules/children/1/children/0/children []", result[6])
+        self.assertEqual("/rules/children/1/children/1           name=Static Objects", result[7])
+        self.assertEqual("/rules/children/1/children/1/children []", result[8])
+        self.assertEqual("/rules/children/1/children/2           name=Uncacheable Responses", result[9])
+        self.assertEqual("/rules/children/1/children/2/children []", result[10])
+    
+
+
+        originalJsonPath = "rules.children.[0]"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True, False) , originalJsonPath, True)
+        self.assertEqual(2, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("rules.children.[0]   name=Performance", result[1])
+
+        originalJsonPath = "rules.children[0]"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True, False) , originalJsonPath, True)
+        self.assertEqual(2, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("rules.children.[0]   name=Performance", result[1])
+
+        originalJsonPath = "$..criteria"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True, False) , originalJsonPath, True)
+        self.assertEqual(5, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("rules.children.[0].children.[0].criteria.[0]   name=contentType", result[1])
+        self.assertEqual("rules.children.[1].children.[0].criteria.[0]   name=fileExtension", result[2])
+        self.assertEqual("rules.children.[1].children.[1].criteria.[0]   name=fileExtension", result[3])
+        self.assertEqual("rules.children.[1].children.[2].criteria.[0]   name=cacheability", result[4]) 
+
+
+        originalJsonPath = "rules.children.[1].children.[0].criteria.[0]"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True, False) , originalJsonPath, True)
+        self.assertEqual(2, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("rules.children.[1].children.[0].criteria.[0]   name=fileExtension", result[1])
+
+
+        originalJsonPath = "rules.children.[1].children.[1].criteria.[0].options.values"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True) , originalJsonPath, True)
+        
+        self.assertEqual(2, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+        self.assertEqual("/rules/children/1/children/1/criteria/0/options/values/0", result[1])
+
+        
+
+    def redirectOutputToArray(self, fun, value, ignoreNewLines = True):
+
+        saved_stdout = sys.stdout
+        
+        out = StringIO()
+        sys.stdout = out
+        
+        fun(value)
+
+        output = list(out.getvalue().split("\n"))
+        
+        if ignoreNewLines:
+            output = list(filter(lambda line: line != '', output))
+
+        
+        sys.stdout = saved_stdout
+
+        return output
 
     def testJSON_Taversals(self):
 
@@ -170,17 +283,31 @@ class Property_JSON_Tests(unittest.TestCase):
         tools = JSONTraversalTools()
         formatter = JSONTreeFormatter()
 
-        someArray = tools.resolveJsonPathstoPointers(originalJsonRuleTree, "$..children")
+        originalJsonPath = "$..children"
+        someArray = tools.resolveJsonPathstoPointers(originalJsonRuleTree, originalJsonPath)
         self.assertEqual(10,len(someArray ))
 
+        output = []
         for pathPair in someArray:
             jsonPathPair = pathPair[0]
             jsonPointerPair = pathPair[1]
 
             resolvedJsonPointer = tools.resolveJsonPointer(originalJsonRuleTree,jsonPointerPair)
-            resolvedJsonPath = tools.resolveJsonPaths(originalJsonRuleTree,jsonPathPair)
-            self.assertEqual(resolvedJsonPointer,resolvedJsonPath[1])
+            resolvedJsonPath = tools.resolveJsonPaths(originalJsonRuleTree,jsonPathPair)[1]
+    
+            self.assertEqual(resolvedJsonPointer,resolvedJsonPath)
+
             
+            result = formatter.printJsonPointer(resolvedJsonPointer, jsonPointerPair)
+            self.assertIsNotNone(result)
+
+            result = formatter.printJsonPointer(resolvedJsonPointer, jsonPointerPair, "", True)
+            output.append(result)
+
+       
+
+        self.assertIn(None, output)
+
 
         
         
