@@ -14,14 +14,22 @@
 # limitations under the License.
 
 import sys
+import os
+
+#adding current directory for easier module imports
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+PACKAGE_PARENT = '..'
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+
+from parsecmd import main  
+
 if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 5):
 
     print('Python 3.5 or higher is required. Executable: ' + sys.executable)
     print('Version: ' + str(sys.version_info[0]) + '.' + str(sys.version_info[1]) )
     exit(1) 
 
-def main():
-    return 1
+
 
 if __name__ == '__main__':
     

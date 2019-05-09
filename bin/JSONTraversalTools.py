@@ -2,7 +2,7 @@ import jsonpointer
 from jsonpath_ng import jsonpath, parse
 import os
 import copy
-from .JSONTreeFormatter import JSONTreeFormatter
+from bin.JSONTreeFormatter import JSONTreeFormatter
 
 class JSONTraversalTools():
 

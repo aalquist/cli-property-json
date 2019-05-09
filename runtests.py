@@ -3,6 +3,7 @@ import unittest
 import coverage
 import sys
 
+
 def runTests():
     tests = unittest.TestLoader().discover('bin/tests')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
