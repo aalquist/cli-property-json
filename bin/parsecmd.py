@@ -120,27 +120,32 @@ def main(mainArgs=None):
         subparsers, "parseTree", "Display and navigate Property Manager JSON file in easier to read format",
         optional_arguments=[
                             {"name": "file", "help": "the JSON file to parse"}, 
-                            {"name": "jsonpath", "help": "jsonpath string to print summary"} ],
+                            {"name": "jsonpath", "help": "jsonpath string to print summary"},
+                            {"name": "use-stdin", "help": "use stdin as input"} ],
         required_arguments=None)
     
     actions["getpointer"] = create_sub_command(
         subparsers, "getpointer", "Display and navigate Property Manager JSON file in easier to read format",
         optional_arguments=[
-                            {"name": "file", "help": "the JSON file to parse"}, 
+                            {"name": "file", "help": "the file as input"}, 
                             {"name": "jsonpointer", "help": "jsonpointer string to print json"},
-                            {"name": "show-json", "help": "display json output"} ],
+                            {"name": "show-json", "help": "display json output"},
+                            {"name": "use-stdin", "help": "use stdin as input"} ],
         required_arguments=None)
 
     args = None
 
-    if mainArgs is None or (isinstance(mainArgs, list) and len(mainArgs) <= 0): 
+    if mainArgs is None: 
+        args = parser.parse_args()
+
+    elif isinstance(mainArgs, list) and len(mainArgs) <= 0: 
         parser.print_help()
         return 0
 
     else:
         args = parser.parse_args(mainArgs)
 
-    if len(sys.argv) < 1:
+    if len(sys.argv) <= 1:
         parser.print_help()
         return 0
 
@@ -163,6 +168,14 @@ def main(mainArgs=None):
         print(e, file=sys.stderr)
         return 1
 
+def getJSONFromSTDIN():
+        
+        with open(0, 'r') as myfile:
+            jsonStr = myfile.read()
+        
+        jsonObj = json.loads(jsonStr)
+        return jsonObj
+
 def getJSONFromFile(jsonPath):
         
         with open(jsonPath, 'r') as myfile:
@@ -172,7 +185,13 @@ def getJSONFromFile(jsonPath):
         return jsonObj
 
 def parseTree(args):
-    originalJsonRuleTree = getJSONFromFile( args.file )
+
+    if(args.use_stdin or args.file is None):
+        originalJsonRuleTree = getJSONFromSTDIN()
+
+    else:
+        originalJsonRuleTree = getJSONFromFile( args.file )
+
     originalJsonPath = args.jsonpath
 
     formatter = JSONTreeFormatter()
@@ -180,13 +199,18 @@ def parseTree(args):
     return 0
 
 def getpointer(args):
-    originalJsonRuleTree = getJSONFromFile( args.file )
+
+    if(args.use_stdin):
+        originalJsonRuleTree = getJSONFromSTDIN()
+    else:    
+        originalJsonRuleTree = getJSONFromFile( args.file )
+
     pointer = args.jsonpointer
 
     tools = JSONTraversalTools()
     pointerContent = tools.fetchPointer(originalJsonRuleTree, pointer)
 
     if args.show_json:
-        print(pointerContent)
+        print(json.dumps( pointerContent) )
         
     return 0

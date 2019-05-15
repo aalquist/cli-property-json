@@ -72,7 +72,7 @@ class JSONTreeFormatter():
         for o in output:    
             print(o.expandtabs(maxpathchars))
 
-    def printJsonPointer(self,json, path, indent = "", returnEmpty = False):
+    def printJsonPointer(self,json, path, indent = "", returnEmpty = False, returnKeys = False ):
 
             
             if( isinstance(json, list)):
@@ -82,7 +82,15 @@ class JSONTreeFormatter():
 
                         subjson = json[i]
                         if isinstance(json[i], dict) and "name" in subjson:
-                            return ("{}{}/{} \t name={}".format(indent,path,i, subjson["name"]) )
+                            
+                            if returnKeys :
+                                keys = list(json.keys() )
+                                keys.remove("name")
+                                return ("{}{}/{} \t name={}\t {}".format(indent,path,i, subjson["name"], keys) )
+                            else : 
+                                return ("{}{}/{} \t name={}".format(indent,path,i, subjson["name"]) )
+
+                            
 
                         else:
                             return ("{}{}/{}".format(indent,path,i) )
@@ -93,7 +101,13 @@ class JSONTreeFormatter():
             else: 
                 
                 if isinstance(json, dict) and "name" in json:
-                        return ("{}{} \t name={}".format(indent,path, json["name"] ) )
+                        
+                        if returnKeys :
+                            keys = list(json.keys() )
+                            keys.remove("name")
+                            return ("{}{} \t name={}\t {}".format(indent,path, json["name"], keys ) )
+                        else : 
+                            return ("{}{} \t name={}".format(indent,path, json["name"] ) )
 
 
                 else:

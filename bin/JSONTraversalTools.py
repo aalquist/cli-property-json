@@ -43,7 +43,9 @@ class JSONTraversalTools():
             subpath = pathValues[0]
             subjson = pathValues[1]
             isList = isinstance(subjson, list)
-            isElement = all( not isinstance(elem, list) and not isinstance(elem, dict) for elem in subjson)  
+            isItterable = isinstance(subjson, list) or isinstance(subjson, dict)
+
+            isElement = isItterable and all( not isinstance(elem, list) and not isinstance(elem, dict) for elem in subjson)  
 
             if not isElement and isList and len(subjson) > 0: #skip jsonPaths that won't resolve to a single object
 

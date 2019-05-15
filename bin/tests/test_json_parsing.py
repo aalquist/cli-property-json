@@ -254,6 +254,19 @@ class Property_JSON_Tests(unittest.TestCase):
         self.assertEqual(originalJsonPath, result[0])
         self.assertEqual("/rules/children/1/children/1/criteria/0/options/values/0", result[1])
 
+        originalJsonPath = "$..*"
+        result = self.redirectOutputToArray(lambda originalJsonPath : formatter.getTreeSummary(originalJsonPath, originalJsonRuleTree, True) , originalJsonPath, True)
+        
+        self.assertEqual(179, len(result) )
+        self.assertEqual(originalJsonPath, result[0])
+
+        self.assertEqual('/accountId', result[1])
+        self.assertEqual('/contractId', result[2])
+        #skipping some tests
+        self.assertEqual('/rules                                                              name=default', result[8])
+        self.assertEqual('/rules/behaviors/0                                                  name=origin', result[9])
+        #skipping more tests
+        self.assertEqual('/rules/options/is_secure', result[178])
         
 
     def redirectOutputToArray(self, fun, value, ignoreNewLines = True):

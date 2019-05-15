@@ -17,6 +17,9 @@
 import unittest
 import os
 import sys
+import json
+from io import StringIO
+
 from bin.parsecmd import main  as parsecmd_main
 
 class ParseCmdTest(unittest.TestCase):
@@ -33,8 +36,16 @@ class ParseCmdTest(unittest.TestCase):
                 "--jsonpath",
                 "$..criteria"
             ]
+        print("\n###testing args: {}".format(args))
+        result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, True)
+        self.assertEqual(5, len(result) )
 
-        parsecmd_main(args)
+        self.assertEqual("$..criteria", result[0])
+        self.assertEqual("/rules/children/0/children/0/criteria/0   name=contentType", result[1])
+        self.assertEqual("/rules/children/1/children/0/criteria/0   name=fileExtension", result[2])
+        self.assertEqual("/rules/children/1/children/1/criteria/0   name=fileExtension", result[3])
+        self.assertEqual("/rules/children/1/children/2/criteria/0   name=cacheability", result[4]) 
+        
 
         args = [
                 "getpointer",
@@ -45,20 +56,45 @@ class ParseCmdTest(unittest.TestCase):
                 "/rules/children"
                 
             ]
-        parsecmd_main(args)
+        
+        print("\n###testing args: {}".format(args))
+        result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, False)
+        self.assertEqual(2, len(result) )
+        jsondict = json.loads( result[0] )
+        self.assertEqual(2, len(jsondict) )
 
         args = [ "help"]
+        print("\n###testing args: {}".format(args))
         parsecmd_main(args)
 
+        
         args = [ "help", "getpointer"]
+        print("\n###testing args: {}".format(args))
         parsecmd_main(args)
 
         #parsecmd_main(None)
-        parsecmd_main([])
+        #parsecmd_main([])
 
         #print(sys.argv)
 
+    def redirectOutputToArray(self, fun, value, ignoreNewLines = True):
+
+        saved_stdout = sys.stdout
         
+        out = StringIO()
+        sys.stdout = out
+        
+        fun(value)
+
+        output = list(out.getvalue().split("\n"))
+        
+        if ignoreNewLines:
+            output = list(filter(lambda line: line != '', output))
+
+        
+        sys.stdout = saved_stdout
+
+        return output
        
 
 if __name__ == '__main__':
