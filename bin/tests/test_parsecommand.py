@@ -30,13 +30,13 @@ class ParseCmdTest(unittest.TestCase):
         path = "{}/json/ruletrees/new-ion-standard.rule-tree.json".format( basedir )
 
         args = [
-                "parseTree",
+                "showpaths",
                 "--file",
                 path,
                 "--jsonpath",
                 "$..criteria"
             ]
-        print("\n###testing args: {}".format(args))
+        #print("\n###testing args: {}".format(args))
         result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, True)
         self.assertEqual(5, len(result) )
 
@@ -57,25 +57,23 @@ class ParseCmdTest(unittest.TestCase):
                 
             ]
         
-        print("\n###testing args: {}".format(args))
+        #print("\n###testing args: {}".format(args))
         result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, False)
         self.assertEqual(2, len(result) )
         jsondict = json.loads( result[0] )
         self.assertEqual(2, len(jsondict) )
 
         args = [ "help"]
-        print("\n###testing args: {}".format(args))
-        parsecmd_main(args)
+        #print("\n###testing args: {}".format(args))
+        result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, False)
+        self.assertTrue(len(result) > 0 )
 
         
         args = [ "help", "getpointer"]
-        print("\n###testing args: {}".format(args))
-        parsecmd_main(args)
+        #print("\n###testing args: {}".format(args))
+        result = self.redirectOutputToArray(lambda args : parsecmd_main(args) , args, False)
+        self.assertTrue(len(result) > 0 )
 
-        #parsecmd_main(None)
-        #parsecmd_main([])
-
-        #print(sys.argv)
 
     def redirectOutputToArray(self, fun, value, ignoreNewLines = True):
 

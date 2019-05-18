@@ -116,8 +116,8 @@ def main(mainArgs=None):
         help="Show available help",
         add_help=False).add_argument( 'args', metavar="", nargs=argparse.REMAINDER)
 
-    actions["parseTree"] = create_sub_command(
-        subparsers, "parseTree", "Display and navigate Property Manager JSON file in easier to read format",
+    actions["showpaths"] = create_sub_command(
+        subparsers, "showpaths", "Display and navigate Property Manager JSON file in easier to read format",
         optional_arguments=[
                             {"name": "file", "help": "the JSON file to parse"}, 
                             {"name": "jsonpath", "help": "jsonpath string to print summary"},
@@ -184,7 +184,7 @@ def getJSONFromFile(jsonPath):
         jsonObj = json.loads(jsonStr)
         return jsonObj
 
-def parseTree(args):
+def showpaths(args):
 
     if(args.use_stdin or args.file is None):
         originalJsonRuleTree = getJSONFromSTDIN()
