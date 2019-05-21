@@ -1,0 +1,12 @@
+{
+    "requirements": {
+      "python": "3.0.0"
+    },
+    "commands": [
+      {
+        "name": "property-json",
+        "version": "0.0.1",
+        "description": "JSON Searching Utility"
+      }
+    ]
+  }
