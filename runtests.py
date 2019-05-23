@@ -13,7 +13,7 @@ def mainOnlyTest():
 
     try:
         result = runTests()
-
+        print("Test Results: {}".format(result), file=sys.stderr)
     except Exception:
         return 1
 
@@ -40,18 +40,19 @@ def mainTestWithCoverage():
     try:
         
         result = runTests()
-        
+        print("Coverage Test Results: {}".format(result.wasSuccessful(), file=sys.stderr))
+
         if result.wasSuccessful():
 
             COV.stop()
             COV.save()
-            print('Coverage Summary:')
+            print('Coverage Summary:',file=sys.stderr)
             COV.report()
 
             basedir = os.path.abspath(os.path.dirname(__file__))
             covdir = os.path.join(basedir, 'tmp/coverage')
             COV.html_report(directory=covdir)
-            print('HTML version: file://%s/index.html' % covdir)
+            print('HTML version: file://%s/index.html' % covdir, file=sys.stderr)
             COV.erase()
             return 0
         

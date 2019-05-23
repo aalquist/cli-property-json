@@ -6,7 +6,7 @@
       {
         "name": "property-json",
         "version": "0.0.1",
-        "description": "JSON Searching Utility"
+        "description": "Property Manager JSON Searching Utility"
       }
     ]
   }

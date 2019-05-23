@@ -140,14 +140,12 @@ def main(mainArgs=None):
 
     elif isinstance(mainArgs, list) and len(mainArgs) <= 0: 
         parser.print_help()
-        return 0
+        return 1
 
     else:
         args = parser.parse_args(mainArgs)
 
-    if len(sys.argv) <= 1:
-        parser.print_help()
-        return 0
+
 
     if args.command == "help":
 

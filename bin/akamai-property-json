@@ -21,7 +21,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.
 PACKAGE_PARENT = '..'
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-from parsecmd import main  
+
 
 if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 5):
 
@@ -29,7 +29,7 @@ if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] 
     print('Version: ' + str(sys.version_info[0]) + '.' + str(sys.version_info[1]) )
     exit(1) 
 
-
+from parsecmd import main  
 
 if __name__ == '__main__':
     
