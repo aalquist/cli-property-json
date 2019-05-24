@@ -136,7 +136,8 @@ def main(mainArgs=None):
     args = None
 
     if mainArgs is None: 
-        args = parser.parse_args()
+        parser.print_help()
+        return 1
 
     elif isinstance(mainArgs, list) and len(mainArgs) <= 0: 
         parser.print_help()
